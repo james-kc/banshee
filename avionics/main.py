@@ -3,35 +3,13 @@ from datetime import datetime
 import time
 import os
 import csv
-from instruments import camera, gps, barometer, accelerometer, gps
+from instruments import gps, barometer, accelerometer
 
 DATA_PATH = 'data'
 # Begin by creating session folder in /data
 current_datetime = datetime.now().strftime('%Y%m%dT%H%M%S')
 SESSION_DATA_PATH = f"{DATA_PATH}/{current_datetime}"
 os.makedirs(SESSION_DATA_PATH, exist_ok=True)
-
-def image_capture_thread(start_event, stop_event):
-    picam2 = None
-    with open(f"{SESSION_DATA_PATH}/image_capture.csv", mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['timestamp', 'image_path'])
-
-        while not stop_event.is_set():
-            if start_event.is_set():
-                if picam2 is None:
-                    picam2 = camera.initialise_camera()
-                image_path = camera.capture_image(picam2)
-                writer.writerow([datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f"), image_path])
-                file.flush()
-
-                # with 1sec sleep, images were captured in 4sec intervals
-                # sleep is removed to improve image capture rate
-                # time.sleep(1)  # Capture image every 1 second
-            else:
-                if picam2 is not None:
-                    camera.power_down_camera(picam2)
-                    picam2 = None
 
 def barometer_thread(start_event, stop_event):
     barometer_obj = None
@@ -135,7 +113,6 @@ def main():
 
     # Create and start threads for image capture and sensor reading
     threads = [
-        threading.Thread(target=image_capture_thread, args=thread_args),
         threading.Thread(target=barometer_thread, args=thread_args),
         threading.Thread(target=accel_thread, args=thread_args),
         threading.Thread(target=gps_thread, args=thread_args)
