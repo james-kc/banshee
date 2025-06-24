@@ -21,11 +21,12 @@ def initialise_accelerometer():
     sensor.gyro_range = GyroRange.RANGE_2000_DPS
     print(f"Gyro range set to: {GyroRange.string[sensor.gyro_range]} DPS")
 
-    sensor.accelerometer_data_rate = Rate.RATE_1_66K_HZ
-    # sensor.accelerometer_data_rate = Rate.RATE_12_5_HZ
+    # sensor.accelerometer_data_rate = Rate.RATE_1_66K_HZ
+    sensor.accelerometer_data_rate = Rate.RATE_3_33K_HZ
     print(f"Accelerometer rate set to: {Rate.string[sensor.accelerometer_data_rate]} HZ")
 
-    sensor.gyro_data_rate = Rate.RATE_1_66K_HZ
+    # sensor.gyro_data_rate = Rate.RATE_1_66K_HZ
+    sensor.gyro_data_rate = Rate.RATE_3_33K_HZ
     print(f"Gyro rate set to: {Rate.string[sensor.gyro_data_rate]} HZ")
 
     return sensor

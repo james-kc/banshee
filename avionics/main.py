@@ -13,7 +13,7 @@ BAROMETER_DATA_RATE = 100 # Hz
 BAROMETER_DATA_PERIOD = 1 / BAROMETER_DATA_RATE  # seconds
 
 # This setting of 145 is resulting in 107.62 Hz sample rate in recorded data
-ACCEL_DATA_RATE = 145 # Hz
+ACCEL_DATA_RATE = 2000 # Hz
 ACCEL_DATA_PERIOD = 1 / ACCEL_DATA_RATE  # seconds
 
 # Begin by creating session folder in /data
