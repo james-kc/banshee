@@ -10,6 +10,8 @@ def initialise_bme280():
     bus = SMBus(1)
     bme280 = BME280(i2c_dev=bus)
 
+    bme280.setup(mode='forced')
+
     baseline_values = []
     baseline_size = 100
 
