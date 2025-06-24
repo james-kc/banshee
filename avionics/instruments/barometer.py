@@ -11,7 +11,7 @@ def initialise_bme280():
     bme280 = BME280(i2c_dev=bus)
 
     bme280.setup(
-        mode='normal',
+        mode='forced',
         temperature_oversampling=0,
         pressure_oversampling=16,
         humidity_oversampling=0,
