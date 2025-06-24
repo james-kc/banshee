@@ -9,7 +9,7 @@ DATA_PATH = 'data'
 GPS_DATA_RATE = 1 # Hz
 GPS_DATA_PERIOD = 1 / GPS_DATA_RATE  # seconds
 
-BAROMETER_DATA_RATE = 100 # Hz
+BAROMETER_DATA_RATE = 2000 # Hz
 BAROMETER_DATA_PERIOD = 1 / BAROMETER_DATA_RATE  # seconds
 
 # This setting of 145 is resulting in 107.62 Hz sample rate in recorded data
@@ -123,9 +123,9 @@ def main():
 
     # Create and start threads for image capture and sensor reading
     threads = [
-        # threading.Thread(target=barometer_thread, args=thread_args),
+        threading.Thread(target=barometer_thread, args=thread_args),
         threading.Thread(target=accel_thread, args=thread_args),
-        # threading.Thread(target=gps_thread, args=thread_args),
+        threading.Thread(target=gps_thread, args=thread_args),
     ]
 
     for thread in threads:
