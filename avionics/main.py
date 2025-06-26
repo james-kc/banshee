@@ -142,6 +142,14 @@ def gps_thread(start_event, stop_event):
                 time.sleep(GPS_DATA_PERIOD)
 
 def main():
+
+    # Buzz the buzzer twice to indicate successful startup
+    for i in range(2):
+        GPIO.output(BUZZER_PIN, GPIO.HIGH)
+        time.sleep(0.5)
+        GPIO.output(BUZZER_PIN, GPIO.LOW)    
+        time.sleep(0.5)
+
     # Events to control the threads
     start_event = threading.Event()
     stop_event = threading.Event()
