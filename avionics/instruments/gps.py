@@ -21,6 +21,16 @@ def initialise_gps():
     # Set update rate to once a second (1hz) which is what you typically want.
     gps.send_command(b"PMTK220,1000")
 
+    print("Waiting for GPS fix...")
+    while True:
+        gps.update()
+
+        if gps.has_fix:
+            print("GPS fix acquired.")
+            break
+        else:
+            time.sleep(1)
+
     return gps
 
 def get_position(gps):
