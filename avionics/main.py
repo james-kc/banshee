@@ -5,6 +5,7 @@ import os
 import csv
 import RPi.GPIO as GPIO
 from instruments import gps, barometer, accelerometer
+import sys
 
 # --- Constants ---
 DATA_PATH = 'data'
@@ -165,23 +166,34 @@ def main():
     for thread in threads:
         thread.start()
 
-    try:
-        while True:
-            # Simulate starting and stopping the threads
-            command = input("Enter 'start' to start capturing, 'stop' to stop capturing, 'exit' to exit: ").strip().lower()
-            if command == 'start':
-                start_event.set()
-                print("Capture started.")
-            elif command == 'stop':
-                start_event.clear()
-                print("Capture stopped.")
-            elif command == 'exit':
-                stop_event.set()
-                break
-    finally:
+    if len(sys.argv) == 1:
+        print("Running in automatic mode. Press Ctrl+C to stop.")
+
+        start_event.set()
+        print("Capture started.")
         for thread in threads:
             thread.join()
-        GPIO.cleanup()
+
+    elif sys.argv[1] == 'manual':
+        print("Running in manual mode. Press Ctrl+C to stop.")
+
+        try:
+            while True:
+                # Simulate starting and stopping the threads
+                command = input("Enter 'start' to start capturing, 'stop' to stop capturing, 'exit' to exit: ").strip().lower()
+                if command == 'start':
+                    start_event.set()
+                    print("Capture started.")
+                elif command == 'stop':
+                    start_event.clear()
+                    print("Capture stopped.")
+                elif command == 'exit':
+                    stop_event.set()
+                    GPIO.cleanup()
+                    break
+        finally:
+            for thread in threads:
+                thread.join()
 
 if __name__ == '__main__':
     main()
