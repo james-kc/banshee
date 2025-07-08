@@ -1,10 +1,8 @@
+from vpython import box, vector, rate, scene
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.animation import FuncAnimation
 
-# === Load & Prepare Data ===
+# Load data
 df = pd.read_csv("post_flight/data/accelerometer.csv")
 df['timestamp'] = pd.to_datetime(df['timestamp'], format='%d/%m/%Y %H:%M:%S.%f')
 
@@ -12,11 +10,15 @@ dt = df['timestamp'].diff().dt.total_seconds().fillna(0).values
 acc = df[['accel_x', 'accel_y', 'accel_z']].values
 gyro = df[['gyro_x', 'gyro_y', 'gyro_z']].values
 
-# === Estimate Orientation (Pitch & Roll) ===
-pitch, roll = 0.0, 0.0
+# Complementary filter parameters
 alpha = 0.98
-pitch_list, roll_list = [], []
+pitch = 0.0
+roll = 0.0
 
+pitch_list = []
+roll_list = []
+
+# Precompute pitch and roll estimates
 for i in range(len(df)):
     ax, ay, az = acc[i]
     gx, gy, gz = gyro[i]
@@ -34,20 +36,18 @@ for i in range(len(df)):
     pitch_list.append(pitch)
     roll_list.append(roll)
 
-# === Define Cube Model ===
-cube_vertices = np.array([
-    [1, 1, 1], [1, 1, -1], [1, -1, -1], [1, -1, 1],
-    [-1, 1, 1], [-1, 1, -1], [-1, -1, -1], [-1, -1, 1]
-])
+# Create a 3D box
+b = box(length=2, height=1, width=1, color=vector(0.2,0.6,0.8), opacity=0.8)
 
-cube_edges = [
-    (0, 1), (1, 2), (2, 3), (3, 0),
-    (4, 5), (5, 6), (6, 7), (7, 4),
-    (0, 4), (1, 5), (2, 6), (3, 7)
-]
+# VPython scene setup
+scene.title = "3D Orientation Visualizer"
+scene.width = 800
+scene.height = 600
+scene.autoscale = False
+scene.range = 3
 
-# === Rotation Function ===
-def rotation_matrix(pitch, roll):
+# Rotation helper function
+def get_rotation_matrix(pitch, roll):
     cp, sp = np.cos(pitch), np.sin(pitch)
     cr, sr = np.cos(roll), np.sin(roll)
 
@@ -61,58 +61,23 @@ def rotation_matrix(pitch, roll):
 
     return Ry @ Rx
 
-# === Plot Setup ===
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+# Playback loop
+for i in range(len(df)):
+    rate(250)  # limit to 250 loops per second
 
-# Initial cube
-initial_rotated = cube_vertices @ rotation_matrix(pitch_list[0], roll_list[0]).T
-lines = []
-for i, j in cube_edges:
-    line, = ax.plot(*zip(initial_rotated[i], initial_rotated[j]), 'k')
-    lines.append(line)
+    R = get_rotation_matrix(pitch_list[i], roll_list[i])
 
-ax.set_xlim([-2, 2])
-ax.set_ylim([-2, 2])
-ax.set_zlim([-2, 2])
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+    # VPython’s box axis and up vectors:
+    # axis = direction box’s length points (default (1,0,0))
+    # up = direction box’s height points (default (0,1,0))
 
-# === Frame Skipping ===
-source_rate = 250  # Hz
-target_fps = 30    # Target visual frame rate
-step = max(1, int(source_rate / target_fps))  # How many samples to skip
-frame_indices = range(0, len(df), step)
+    # Rotate the default axis (1,0,0) and up (0,1,0)
+    axis_vec = vector(*R @ np.array([1,0,0]))
+    up_vec = vector(*R @ np.array([0,1,0]))
 
-# === Animation Function ===
-def update(frame_idx):
-    idx = frame_indices[frame_idx]
-    R = rotation_matrix(pitch_list[idx], roll_list[idx])
-    rotated = cube_vertices @ R.T
+    b.axis = axis_vec
+    b.up = up_vec
 
-    for line, (i, j) in zip(lines, cube_edges):
-        x, y, z = zip(rotated[i], rotated[j])
-        line.set_data(x, y)
-        line.set_3d_properties(z)
-
-    ax.set_xlim([-2, 2])
-    ax.set_ylim([-2, 2])
-    ax.set_zlim([-2, 2])
-
-    elapsed_sec = (df['timestamp'].iloc[idx] - df['timestamp'].iloc[0]).total_seconds()
-    ax.set_title(f"Time: {elapsed_sec:.2f} s")
-
-    return lines
-
-# === Run Animation ===
-ani = FuncAnimation(
-    fig,
-    update,
-    frames=len(frame_indices),
-    interval=1000 / target_fps,  # ms between frames
-    blit=False
-)
-
-plt.tight_layout()
-plt.show()
+    # Optional: show time in the window title
+    elapsed = (df['timestamp'].iloc[i] - df['timestamp'].iloc[0]).total_seconds()
+    scene.title = f"3D Orientation Visualizer — Time: {elapsed:.3f} s"
