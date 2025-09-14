@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 import banshee_tools as bt
 
-DATA_DIR = 'post_flight/data/accelerometer.csv'
+DATA_DIR = 'post_flight/data/large_accelerometer.csv'
 
 def accel_plot(df: pd.DataFrame, trim: str = 'flight'):
     bt.multi_line_plotter(df, 'timestamp', ['accel_x', 'accel_y', 'accel_z'], trim)

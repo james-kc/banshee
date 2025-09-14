@@ -1,4 +1,2 @@
-# Ignore all files
-*
-# Except this .gitignore file
-!.gitignore
+# Ignore large data files, only keep files segmented to be under GitHub's limit of 100 MB.
+large_*
